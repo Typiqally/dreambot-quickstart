@@ -29,6 +29,7 @@ for /R %%x in (*.bat) do (
     )
 )
 
-rmdir /s /q output
+del /s /q "output\*"
+for /d %%a in ("output\*") do rmdir /s /q "%%a"
 
 endlocal
