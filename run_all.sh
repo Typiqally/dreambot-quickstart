@@ -16,11 +16,11 @@ fi
 cd output
 
 # Find .cmd files, sort naturally
-mapfile -t files < <(find . -maxdepth 1 -type f -name "*.cmd" | sort -V)
+mapfile -t files < <(find . -maxdepth 1 -type f -name "*.bat" | sort -V)
 total=${#files[@]}
 
 if [ "$total" -eq 0 ]; then
-    echo "No .cmd files found in output/"
+    echo "No .bat files found in output/"
     exit 0
 fi
 
@@ -30,7 +30,7 @@ for f in "${files[@]}"; do
     delay=$((RANDOM % delay_range + min_delay))
     echo "[$index/$total] Waiting for $delay seconds before calling \"$f\"..."
     sleep "$delay"
-    cmd.exe //C "$f"   # This runs the .cmd file[1][2]
+    cmd.exe //C "$f"   # This runs the .bat file[1][2]
 done
 
 # Delete all contents inside output/ but keep the directory
