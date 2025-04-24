@@ -16,7 +16,7 @@ fi
 cd output
 
 # Find .cmd files, sort naturally
-mapfile -t files < <(find . -maxdepth 1 -type f -name "*.bat" | sort -V)
+mapfile -t files < <(find . -maxdepth 1 -type f -name "*.bat" -printf "%f\n" | sort -V)
 total=${#files[@]}
 
 if [ "$total" -eq 0 ]; then
