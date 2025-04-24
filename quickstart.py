@@ -42,14 +42,10 @@ start "" /b javaw -Xmx{allocate_ram} -jar "%DREAMBOT_JAR%" -json "{quick_start_f
 cwd = os.getcwd()
 print(f"Current working directory: {cwd}")
 
-target_system = input("Enter target system: ")
 accounts = read_accounts('account_details.csv')
 
 for index, account in enumerate(accounts):
     print(account)
-
-    if account["System"] != target_system:
-        continue
 
     nickname_normalized = account["Username"].replace(" ", "_")
 
