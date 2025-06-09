@@ -45,7 +45,7 @@ def generate_quickstart(account: dict):
         "world": "f2p",
         "flags": ["-covert", "-fresh"],
         "layout": "resizable_modern",
-        "fps": "10",
+        "fps": f"{account['FPS'] if account['Proxy'] != '' else None}",
         "script": f"{account['Script']}"
     }
 
@@ -63,7 +63,7 @@ template = """
 set "DREAMBOT_JAR=%USERPROFILE%\\DreamBot\\BotData\\client.jar"
 start "" /B /LOW /AFFINITY {affinity} javaw -Xms{allocate_ram} -Xmx{allocate_ram} \
 -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 \
--XX:+UseNUMA -server -Djava.awt.headless=true -jar "%DREAMBOT_JAR%" \
+-XX:+UseNUMA -server -jar "%DREAMBOT_JAR%" \
 -json "{quick_start_file_path}" >nul 2>&1
 """
 
@@ -77,7 +77,7 @@ accounts = input_accounts(
         "Banned", "Username", "E-mail",
         "Password", "TOTP secret", "Proxy",
         "Previous Proxy", "Script", "Params",
-        "Breaks"
+        "Breaks", "FPS"
     ]
 )
 
