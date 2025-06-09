@@ -1,18 +1,5 @@
-import csv
 import json
 import os
-
-
-def calculate_affinity(index, reserved_cores=2):
-    """
-    Handles processor groups for >64 cores
-    Returns tuple: (group_number, affinity_mask_hex)
-    """
-    cores_per_group = 64
-    group = index // (cores_per_group - reserved_cores)
-    group_core = index % (cores_per_group - reserved_cores) + reserved_cores
-    mask = 1 << group_core
-    return (group, format(mask, 'x').upper())
 
 
 def input_accounts(columns, delimiter='\t'):
@@ -59,9 +46,10 @@ def generate_quickstart(account: dict):
 template = """
 @echo off
 set "DREAMBOT_JAR=%USERPROFILE%\\DreamBot\\BotData\\client.jar"
-
-rem PowerShell command for cross-group affinity
-powershell -Command "$p = Start-Process javaw -ArgumentList '-Xms512M -Xmx512M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 -XX:+UseNUMA -server -jar \"%DREAMBOT_JAR%\" -json \"{quick_start_file_path}\"' -PassThru -WindowStyle Hidden; $p.ProcessorAffinity = {affinity}; $p.ProcessorGroup = {group}"
+start "" /B /LOW javaw -Xms{allocate_ram} -Xmx{allocate_ram} \
+-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 \
+-XX:+UseNUMA -server -jar "%DREAMBOT_JAR%" \
+-json "{quick_start_file_path}" >nul 2>&1
 """
 
 cwd = os.getcwd()
@@ -89,12 +77,9 @@ for index, account in enumerate(accounts):
     os.makedirs(os.path.dirname(batch_file_path), exist_ok=True)
 
     quick_start = generate_quickstart(account)
-    group_number, affinity_mask = calculate_affinity(index)
-
     batch_file_contents = template.format(
-        quick_start_file_path=quick_start_file_path,
-        affinity=affinity_mask,
-        group=group_number
+        allocate_ram="512M",
+        quick_start_file_path=quick_start_file_path
     )
 
     with open(quick_start_file_path, "w") as quick_start_file:
