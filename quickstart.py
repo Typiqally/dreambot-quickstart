@@ -3,6 +3,20 @@ import json
 import os
 
 
+def calculate_affinity(index, total_cores=80, reserved_cores=2, cores_per_process=1):
+    """
+    Calculates CPU affinity mask for each process
+    Reserved cores: 0-3 (for OS/UI)
+    Returns hex string without 0x prefix
+    """
+    usable_cores = total_cores - reserved_cores
+    max_groups = usable_cores // cores_per_process
+    group = index % max_groups
+    start_core = reserved_cores + (group * cores_per_process)
+    mask = ((1 << cores_per_process) - 1) << start_core
+    return format(mask, 'x').upper()
+
+
 def input_accounts(columns, delimiter='\t'):
     lines = []
 
@@ -46,9 +60,11 @@ def generate_quickstart(account: dict):
 
 template = """
 @echo off
-rem Set the path to your DreamBot client JAR file
 set "DREAMBOT_JAR=%USERPROFILE%\\DreamBot\\BotData\\client.jar"
-start "" /b javaw -Xmx{allocate_ram} -jar "%DREAMBOT_JAR%" -json "{quick_start_file_path}" >nul 2>&1
+start "" /B /LOW /AFFINITY {affinity} javaw -Xms{allocate_ram} -Xmx{allocate_ram} \
+-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=2 -XX:ConcGCThreads=1 \
+-XX:+UseNUMA -server -Djava.awt.headless=true -jar "%DREAMBOT_JAR%" \
+-json "{quick_start_file_path}" >nul 2>&1
 """
 
 cwd = os.getcwd()
@@ -69,7 +85,6 @@ for index, account in enumerate(accounts):
     print(account)
 
     nickname_normalized = account["Username"].replace(" ", "_")
-
     quick_start_file_path = os.path.join(cwd, "output", "quick_start", f"{nickname_normalized}.json")
     batch_file_path = os.path.join(cwd, "output", f"{index}_{nickname_normalized}.bat")
 
@@ -77,7 +92,12 @@ for index, account in enumerate(accounts):
     os.makedirs(os.path.dirname(batch_file_path), exist_ok=True)
 
     quick_start = generate_quickstart(account)
-    batch_file_contents = template.format(allocate_ram="512M", quick_start_file_path=quick_start_file_path)
+    affinity_mask = calculate_affinity(index)
+    batch_file_contents = template.format(
+        allocate_ram="512M",
+        quick_start_file_path=quick_start_file_path,
+        affinity=affinity_mask
+    )
 
     with open(quick_start_file_path, "w") as quick_start_file:
         json.dump(quick_start, quick_start_file)
