@@ -62,7 +62,7 @@ template = """
 @echo off
 set "DREAMBOT_JAR=%USERPROFILE%\\DreamBot\\BotData\\client.jar"
 start "" /B /LOW /AFFINITY {affinity} javaw -Xms{allocate_ram} -Xmx{allocate_ram} \
--XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=2 -XX:ConcGCThreads=1 \
+-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1 \
 -XX:+UseNUMA -server -Djava.awt.headless=true -jar "%DREAMBOT_JAR%" \
 -json "{quick_start_file_path}" >nul 2>&1
 """
